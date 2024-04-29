@@ -1,5 +1,4 @@
 from aiogram import Router, F, types
-from config import database
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -29,28 +28,36 @@ async def start_survey(message: types.Message, state: FSMContext):
 
 
 @survey_router.message(BookSurvey.name)
-async def process_name(message: types.Message, state: FSMContext):
+async def name_survey(message: types.Message, state: FSMContext):
+    await state.update_data(survey=message.text)
+    await state.set_state(BookSurvey.age)
+    await message.answer("Введите свой возраст ")
+@survey_router.message(BookSurvey.age)
+async def age(message: types.Message, state: FSMContext):
     age_text = message.text
     if not age_text.isdigit():
         await message.answer("Пожалута введите ваш возраст числами")
         return
+
     if age_text < '18':
         await message.answer("какая у вас средняя оценка в школе")
 
-    if age_text >= '18':
+    if age_text >= '19':
         await message.answer("Какая у вас заработная плата")
 
-    if age_text <= '7':
+    if age_text == '7' or age_text < '7':
         await message.answer('Ты слишком маленький иди в садик')
-        await state.clear()
         await message.answer("Спасибо за прохождение опроса!")
+        await state.clear()
+        return
 
-    if age_text >='60':
+    if age_text =='60' or age_text >'60':
         await message.answer('Извините вы стары для опроса')
         await state.clear()
         await message.answer("Спасибо за прохождение опроса!")
 
-
+    else:
+        await message.answer('Правильно введите свой возраст')
 
     await state.update_data(name=message.text)
     await state.set_state(BookSurvey.age)
